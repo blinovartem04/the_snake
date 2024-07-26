@@ -26,6 +26,7 @@ SNAKE_COLOR = (0, 255, 0)
 SPEED = 20
 
 # Настройка игрового окна:
+pygame.init()  # Инициализация всех модулей pygame
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
 # Заголовок окна игрового поля:
@@ -40,7 +41,7 @@ class GameObject:
 
     def __init__(self) -> None:
         """Инициализация объекта и его позиции."""
-        self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
+        self.position = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
         self.body_color = None
 
     def draw(self):
@@ -88,24 +89,18 @@ class Snake(GameObject):
     def draw(self):
         """Отрисовка змеи."""
         for position in self.positions:
-            rect = pygame.Rect((position[0] * GRID_SIZE,
-                                position[1] * GRID_SIZE),
-                               (GRID_SIZE, GRID_SIZE))
-            pygame.draw.rect(screen, SNAKE_COLOR, rect)
+            rect = pygame.Rect(position, (GRID_SIZE, GRID_SIZE))
+            pygame.draw.rect(screen, self.body_color, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
     def move(self):
         """Обновление позиции змеи."""
-        if self.next_direction:
-            self.direction = self.next_direction
-            self.next_direction = None
+        curr = self.positions[0]
+        x, y = self.direction
+        new = (((curr[0] + x * GRID_SIZE) % SCREEN_WIDTH),
+               ((curr[1] + y * GRID_SIZE) % SCREEN_HEIGHT))
+        self.positions.insert(0, new)
 
-        x, y = self.positions[0]
-        dx, dy = self.direction
-        new_position = ((x + dx * GRID_SIZE) % SCREEN_WIDTH,
-                        (y + dy * GRID_SIZE) % SCREEN_HEIGHT)
-
-        self.positions.insert(0, new_position)
         if len(self.positions) > self.length:
             self.positions.pop()
 
@@ -116,18 +111,18 @@ class Snake(GameObject):
         self.direction = choice([UP, DOWN, LEFT, RIGHT])
         self.score = 0
 
-    def update_direction(self):
+    def update_direction(self, direction):
         """Обновление направления движения змеи на следующее."""
-        if self.next_direction:
-            self.direction = self.next_direction
-            self.next_direction = None
+        if (direction[0] * -1, direction[1] * -1) != self.direction:
+            self.direction = direction
 
 
 def handle_keys(direction):
     """Обработка нажатий клавиш для изменения направления движения змеи."""
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            return False
+            pygame.quit()
+            quit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP and direction != DOWN:
                 return UP
@@ -147,12 +142,8 @@ def main():
 
     while True:
         clock.tick(SPEED)
-
-        handle_keys(snake)
+        snake.update_direction(handle_keys(snake.direction))
         snake.move()
-
-        if snake.positions[0] in snake.positions[1:]:
-            snake.reset()
 
         if snake.get_head_position() == apple.position:
             snake.length += 1
@@ -163,11 +154,9 @@ def main():
         apple.draw()
         pygame.display.update()
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                return
+        if snake.positions[0] in snake.positions[1:]:
+            snake.reset()
 
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()
