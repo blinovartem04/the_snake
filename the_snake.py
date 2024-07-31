@@ -95,7 +95,7 @@ class Snake(GameObject):
 
     def move(self):
         """Обновление позиции змеи."""
-        current = self.positions[0]
+        current = self.get_head_position()
         x, y = self.direction
         new = (((current[0] + x * GRID_SIZE) % SCREEN_WIDTH),
                ((current[1] + y * GRID_SIZE) % SCREEN_HEIGHT))
@@ -133,7 +133,7 @@ def handle_keys(direction):
                 return LEFT
             elif event.key == pygame.K_RIGHT and direction != LEFT:
                 return RIGHT
-    return direction
+    return True
 
 
 def main():
@@ -144,7 +144,11 @@ def main():
     while True:
         clock.tick(SPEED)
         screen.fill(BOARD_BACKGROUND_COLOR)
-        snake.direction = handle_keys(snake.direction)
+        new_direction = handle_keys(snake.direction)
+        if new_direction is False:
+            break
+        elif new_direction is not True:
+            snake.direction = new_direction
         snake.update_direction()
         snake.move()
 
@@ -158,11 +162,6 @@ def main():
         snake.draw()
         apple.draw()
         pygame.display.update()
-
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                return
 
 
 if __name__ == '__main__':
