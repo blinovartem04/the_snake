@@ -1,5 +1,5 @@
 # Игра "Змейка" на PyGame
-Скриншот
+
 ![5292232541941662931](https://github.com/user-attachments/assets/d1341b59-40cc-49ee-9467-7fd5ade3917f)
 
 # Функционал
